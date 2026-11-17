@@ -1,0 +1,22 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: plantpulse-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: plantpulse
+      POSTGRES_PASSWORD: plantpulse123
+      POSTGRES_DB: plantpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plantpulse -d plantpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
