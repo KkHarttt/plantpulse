@@ -51,17 +51,6 @@ export class AppController {
     };
   }
 
-  // Мониторинг оборудования: администратор,
-  // менеджер и оператор
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.MANAGER, Role.OPERATOR)
-  @Get('equipment')
-  getEquipment() {
-    return {
-      message: 'Доступ к мониторингу оборудования разрешён',
-    };
-  }
-
   // Рабочий раздел: все авторизованные сотрудники
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(

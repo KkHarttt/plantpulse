@@ -5,6 +5,7 @@ import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { RolesGuard } from './guards/roles.guard.js';
+import { EquipmentModule } from './equipment/equipment.module.js';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { RolesGuard } from './guards/roles.guard.js';
     }),
     PrismaModule,
     AuthModule,
+    EquipmentModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
