@@ -1,0 +1,237 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  WORKER
+  OPERATOR
+  MANAGER
+  ADMIN
+}
+
+enum Shift {
+  MORNING
+  DAY
+  NIGHT
+}
+
+enum ItemType {
+  NUMBER
+  PLAN_CHECK
+}
+
+enum ChecklistStatus {
+  DRAFT
+  SUBMITTED
+  LATE
+}
+
+enum Severity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum IssueStatus {
+  OPEN
+  AI_CHAT
+  ESCALATED
+  RESOLVED
+}
+
+enum SenderType {
+  WORKER
+  AI
+  OPERATOR
+  SYSTEM
+}
+
+model Department {
+  id         Int         @id @default(autoincrement())
+  name       String
+  parentId   Int?
+  parent     Department?  @relation("DeptTree", fields: [parentId], references: [id])
+  children   Department[] @relation("DeptTree")
+  users      User[]
+  equipment  Equipment[]
+  templates  ChecklistTemplate[]
+  checklists Checklist[]
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  login        String   @unique
+  passwordHash String
+  fullName     String
+  role         Role
+  isActive     Boolean  @default(true)
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime @default(now())
+
+  checklists     Checklist[]
+  reportedIssues Issue[] @relation("IssueReporter")
+  assignedIssues Issue[] @relation("IssueOperator")
+  messages       ChatMessage[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+}
+
+model Equipment {
+  id           Int     @id @default(autoincrement())
+  name         String
+  code         String  @unique
+  isActive     Boolean @default(true)
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  normRanges    NormRange[]
+  templateItems TemplateItem[]
+  values        ChecklistValue[]
+  issues        Issue[]
+}
+
+model NormRange {
+  id          Int    @id @default(autoincrement())
+  equipmentId Int
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  parameter   String
+  unit        String?
+  min         Float?
+  max         Float?
+  warnMin     Float?
+  warnMax     Float?
+
+  @@unique([equipmentId, parameter])
+}
+
+model ChecklistTemplate {
+  id           Int     @id @default(autoincrement())
+  name         String
+  version      Int     @default(1)
+  isArchived   Boolean @default(false)
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+  items        TemplateItem[]
+  checklists   Checklist[]
+}
+
+model TemplateItem {
+  id          Int      @id @default(autoincrement())
+  templateId  Int
+  template    ChecklistTemplate @relation(fields: [templateId], references: [id])
+  type        ItemType
+  label       String
+  unit        String?
+  required    Boolean  @default(true)
+  order       Int      @default(0)
+  equipmentId Int?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id])
+  values      ChecklistValue[]
+}
+
+model Checklist {
+  id           Int      @id @default(autoincrement())
+  templateId   Int
+  template     ChecklistTemplate @relation(fields: [templateId], references: [id])
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+  date         DateTime @db.Date
+  shift        Shift
+  status       ChecklistStatus @default(DRAFT)
+  comment      String?
+  photoUrls    String[]
+  submittedAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  values ChecklistValue[]
+  issues Issue[]
+
+  @@unique([userId, date, shift])
+}
+
+model ChecklistValue {
+  id             Int     @id @default(autoincrement())
+  checklistId    Int
+  checklist      Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  templateItemId Int
+  templateItem   TemplateItem @relation(fields: [templateItemId], references: [id])
+  equipmentId    Int?
+  equipment      Equipment? @relation(fields: [equipmentId], references: [id])
+  numberValue    Float?
+  done           Boolean?
+  failReason     String?
+}
+
+model Issue {
+  id          Int      @id @default(autoincrement())
+  checklistId Int?
+  checklist   Checklist? @relation(fields: [checklistId], references: [id])
+  equipmentId Int?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id])
+  reporterId  Int
+  reporter    User     @relation("IssueReporter", fields: [reporterId], references: [id])
+  operatorId  Int?
+  operator    User?    @relation("IssueOperator", fields: [operatorId], references: [id])
+  title       String
+  description String
+  severity    Severity
+  status      IssueStatus @default(OPEN)
+  attempts    Int      @default(0)
+  resolution  String?
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id         Int      @id @default(autoincrement())
+  issueId    Int
+  issue      Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  senderType SenderType
+  senderId   Int?
+  sender     User?    @relation(fields: [senderId], references: [id])
+  text       String
+  aiModel    String?
+  helped     Boolean?
+  createdAt  DateTime @default(now())
+}
+
+model KnowledgeDoc {
+  id                  Int      @id @default(autoincrement())
+  title               String
+  content             String
+  source              String?
+  confirmedByOperator Boolean  @default(false)
+  createdAt           DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  issueId   Int?
+  text      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  Int?
+  details   Json?
+  createdAt DateTime @default(now())
+}
