@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { RolesGuard } from './guards/roles.guard.js';
 import { EquipmentModule } from './equipment/equipment.module.js';
+import { ChecklistsModule } from './checklists/checklists.module.js';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { EquipmentModule } from './equipment/equipment.module.js';
     PrismaModule,
     AuthModule,
     EquipmentModule,
+    ChecklistsModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
