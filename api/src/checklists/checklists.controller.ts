@@ -32,16 +32,19 @@ export class ChecklistsController {
     private readonly checklistsService: ChecklistsService,
   ) {}
 
+  // Получение всех чек-листов
   @Get()
   findAll() {
     return this.checklistsService.findAll();
   }
 
+  // Получение одного чек-листа
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.checklistsService.findOne(id);
   }
 
+  // Создание нового чек-листа
   @Post()
   create(@Body() dto: CreateChecklistDto, @Request() req: any) {
     return this.checklistsService.create(
@@ -50,11 +53,18 @@ export class ChecklistsController {
     );
   }
 
+  // Добавление значений в чек-лист
   @Post(':id/values')
   addValues(
     @Param('id', ParseIntPipe) id: number,
     @Body('values') values: CreateChecklistValueDto[],
   ) {
     return this.checklistsService.addValues(id, values);
+  }
+
+  // Проверка нормативов
+  @Get(':id/norm-check')
+  checkNorms(@Param('id', ParseIntPipe) id: number) {
+    return this.checklistsService.checkNorms(id);
   }
 }
