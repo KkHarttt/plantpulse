@@ -15,6 +15,7 @@ export class NormCheckService {
     const norms = await this.prisma.normRange.findMany({
       where: { equipmentId },
     });
+    
 
     const norm = norms.find(
       (item) =>
