@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module.js';
 import { RolesGuard } from './guards/roles.guard.js';
 import { EquipmentModule } from './equipment/equipment.module.js';
 import { ChecklistsModule } from './checklists/checklists.module.js';
+import { IssuesModule } from './issues/issues.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { ChecklistsModule } from './checklists/checklists.module.js';
     AuthModule,
     EquipmentModule,
     ChecklistsModule,
+    IssuesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
