@@ -9,6 +9,7 @@ import { EquipmentModule } from './equipment/equipment.module.js';
 import { ChecklistsModule } from './checklists/checklists.module.js';
 import { IssuesModule } from './issues/issues.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
     ChecklistsModule,
     IssuesModule,
     NotificationsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
